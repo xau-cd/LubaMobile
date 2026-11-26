@@ -5,7 +5,6 @@ on:
   push:
     branches:
       - main
-
   workflow_dispatch:
 
 permissions:
@@ -13,55 +12,60 @@ permissions:
 
 jobs:
   build:
-    name: Build Luba Mobile APK
+    name: Build Luba Mobile
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Récupérer le projet
+      # 1. Télécharger le dépôt
       - name: Checkout Repository
         uses: actions/checkout@v4
 
       # 2. Installer Java 17
-      - name: Set up JDK 17
+      - name: Setup JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
-          cache: gradle
 
       # 3. Installer le SDK Android
       - name: Setup Android SDK
         uses: android-actions/setup-android@v4.0.2
         with:
-          packages: 'platform-tools'
+          packages: |
+            platform-tools
+            platforms;android-36
+            build-tools;35.0.0
 
-      # 4. Vérifier les outils Android
-      - name: Verify Android SDK
+      # 4. Installer Gradle 8.13
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.13'
+
+      # 5. Vérifier la structure
+      - name: Verify Project
         run: |
-          echo "ANDROID_HOME=$ANDROID_HOME"
-          adb version
-          sdkmanager --version
+          test -f settings.gradle.kts
+          test -f build.gradle.kts
+          test -f application/build.gradle.kts
+          test -f application/src/main/AndroidManifest.xml
+          echo "Project structure verified"
 
-      # 5. Vérifier Gradle Wrapper
-      - name: Check Gradle Wrapper
-        run: |
-          test -f ./gradlew
-          chmod +x ./gradlew
-
-      # 6. Compiler le projet Android
+      # 6. Compiler l'application
       - name: Build Debug APK
-        run: ./gradlew assembleDebug --stacktrace
+        run: gradle :application:assembleDebug --stacktrace
 
-      # 7. Vérifier la génération APK
+      # 7. Vérifier l'APK
       - name: Verify APK
         run: |
-          find app/build/outputs/apk/debug -name "*.apk" -type f
+          find application/build/outputs/apk/debug \
+            -name "*.apk" -type f
 
-      # 8. Publier le fichier APK
+      # 8. Publier l'APK
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: LubaMobile-APK
-          path: app/build/outputs/apk/debug/*.apk
+          path: application/build/outputs/apk/debug/*.apk
           if-no-files-found: error
           retention-days: 14
