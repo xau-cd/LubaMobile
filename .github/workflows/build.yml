@@ -13,48 +13,73 @@ permissions:
 
 jobs:
   build:
-    name: Construire Luba Mobile
+    name: Build Android APK
     runs-on: ubuntu-latest
     timeout-minutes: 45
 
+    env:
+      ANDROID_HOME: /usr/local/lib/android/sdk
+      ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+
     steps:
-      # 1. Récupération du dépôt
+      # 1. Récupérer le dépôt
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # 2. Configuration Java 17
-      - name: Configure JDK 17
+      # 2. Installer Java 17
+      - name: Setup JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
 
-      # 3. Configuration Gradle
+      # 3. Configurer Gradle
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      # 4. Installation du SDK Android
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
-      # 5. Installation des composants Android nécessaires
-      - name: Install Android SDK Components
+      # 4. Vérifier le SDK Android préinstallé
+      - name: Verify Android SDK
         run: |
-          yes | sdkmanager --licenses || true
+          echo "ANDROID_HOME=$ANDROID_HOME"
 
-          sdkmanager \
+          if [ ! -d "$ANDROID_HOME" ]; then
+            echo "Android SDK introuvable."
+            exit 1
+          fi
+
+          find "$ANDROID_HOME/cmdline-tools" \
+            -type f -name sdkmanager
+
+      # 5. Installer les composants Android
+      - name: Install Android Components
+        shell: bash
+        run: |
+          set -e
+
+          SDKMANAGER=$(find "$ANDROID_HOME/cmdline-tools" \
+            -type f -name sdkmanager | sort -V | tail -n 1)
+
+          if [ -z "$SDKMANAGER" ]; then
+            echo "sdkmanager introuvable."
+            exit 1
+          fi
+
+          echo "SDK Manager: $SDKMANAGER"
+
+          yes | "$SDKMANAGER" \
+            --sdk_root="$ANDROID_HOME" \
+            --licenses || true
+
+          "$SDKMANAGER" \
+            --sdk_root="$ANDROID_HOME" \
             "platform-tools" \
             "platforms;android-36" \
             "build-tools;35.0.0"
 
-      # 6. Vérification de la structure du projet
+      # 6. Vérifier les fichiers du projet
       - name: Verify Project Structure
         run: |
-          echo "=== ROOT DIRECTORY ==="
-          ls -la
-
-          echo "=== APP MODULE ==="
-          ls -la app/
+          set -e
 
           test -f settings.gradle.kts
           test -f build.gradle.kts
@@ -63,49 +88,47 @@ jobs:
           test -f app/src/main/AndroidManifest.xml
           test -f app/src/main/assets/www/index.html
 
-          echo "Project structure verified successfully."
+          echo "Structure Android valide."
 
-      # 7. Vérification de Gradle
-      - name: Verify Gradle
+      # 7. Vérifier Gradle Wrapper
+      - name: Verify Gradle Wrapper
         run: |
-          if [ -f gradlew ]; then
-            chmod +x gradlew
-            ./gradlew --version
-          else
-            echo "Gradle wrapper absent du dépôt."
-            exit 1
-          fi
+          set -e
 
-      # 8. Vérification de la configuration Android
-      - name: Verify Android Configuration
+          test -f gradlew
+          test -f gradle/wrapper/gradle-wrapper.jar
+          test -f gradle/wrapper/gradle-wrapper.properties
+
+          chmod +x gradlew
+
+          ./gradlew --version
+
+      # 8. Vérifier la configuration Android
+      - name: Verify Android Project
         run: |
-          echo "Checking Android module..."
           ./gradlew :app:tasks --all
 
-      # 9. Compilation de l'APK Debug
+      # 9. Compiler l'application
       - name: Build Debug APK
         run: |
-          ./gradlew \
-            :app:assembleDebug \
+          ./gradlew :app:assembleDebug \
             --no-daemon \
-            --stacktrace \
-            --warning-mode all
+            --stacktrace
 
-      # 10. Vérification de l'APK
+      # 10. Vérifier le résultat
       - name: Verify APK
         run: |
           APK="app/build/outputs/apk/debug/app-debug.apk"
 
           if [ ! -f "$APK" ]; then
-            echo "ERROR: APK not generated."
+            echo "APK non générée."
             find app/build/outputs -type f || true
             exit 1
           fi
 
-          echo "APK generated successfully."
           ls -lh "$APK"
 
-      # 11. Publication de l'APK comme artefact
+      # 11. Publier l'APK
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
