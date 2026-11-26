@@ -91,17 +91,16 @@ jobs:
           echo "Structure Android valide."
 
       # 7. Vérifier Gradle Wrapper
-      - name: Verify Gradle Wrapper
-        run: |
-          set -e
+      
+- name: Vérifier le wrapper Gradle
+  run: |
+    set -eux
+    test -f gradlew
+    test -f gradle/wrapper/gradle-wrapper.jar
+    test -f gradle/wrapper/gradle-wrapper.properties
+    chmod +x gradlew
+    ./gradlew --version
 
-          test -f gradlew
-          test -f gradle/wrapper/gradle-wrapper.jar
-          test -f gradle/wrapper/gradle-wrapper.properties
-
-          chmod +x gradlew
-
-          ./gradlew --version
 
       # 8. Vérifier la configuration Android
       - name: Verify Android Project
