@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Palette reprise du site (variables lp du site) -->
+    <color name="luba_bg">#050605</color>
+    <color name="luba_surface">#0B0D0A</color>
+    <color name="luba_surface_2">#12150F</color>
+    <color name="luba_line">#24FFFFFF</color>
+    <color name="luba_text">#F3F6EE</color>
+    <color name="luba_text_secondary">#B0B8A8</color>
+    <color name="luba_text_muted">#818A7A</color>
+    <color name="luba_accent">#B8FF0D</color>
+    <color name="luba_accent_ink">#0B1100</color>
+</resources>

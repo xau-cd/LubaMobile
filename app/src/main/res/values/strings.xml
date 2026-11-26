@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Luba AI</string>
+    <string name="share_with">Partager avec</string>
+    <string name="error_title">Connexion impossible</string>
+    <string name="error_message">Vérifiez votre connexion Internet puis réessayez.</string>
+    <string name="error_retry">Réessayer</string>
+    <string name="error_link_open">Lien impossible à ouvrir.</string>
+    <string name="error_file_picker">Impossible d\'ouvrir les fichiers.</string>
+    <string name="error_download">Aucune application ne peut ouvrir ce téléchargement.</string>
+</resources>

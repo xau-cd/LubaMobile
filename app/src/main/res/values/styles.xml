@@ -1,0 +1,18 @@
+<resources>
+    <style name="AppTheme" parent="android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:windowActionModeOverlay">true</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:statusBarColor">@color/luba_bg</item>
+        <item name="android:navigationBarColor">@color/luba_bg</item>
+        <item name="android:windowLightNavigationBar">false</item>
+        <item name="android:colorAccent">@color/luba_accent</item>
+        <item name="android:windowBackground">@color/luba_bg</item>
+    </style>
+
+    <style name="Theme.Luba.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/luba_bg</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash_logo</item>
+        <item name="postSplashScreenTheme">@style/AppTheme</item>
+    </style>
+</resources>

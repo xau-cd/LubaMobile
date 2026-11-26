@@ -1,0 +1,8 @@
+Copier dans le projet LubaMobile existant en respectant les chemins (remplacer l'existant).
+- app/...  : fichiers a compiler (code, ressources, icones, ecran de demarrage)
+- app/src/main/assets/www/index.html : votre site (Luba.html) embarque. Ne pas ecraser si votre version est plus recente.
+- logo/    : icone Play Store 512x512 + logos 1024 (a envoyer sur la Play Console, hors projet)
+
+Avant de copier : supprimer les anciens dossiers app/src/main/res/mipmap-* et mipmap-anydpi*,
+ainsi que drawable/ic_luba.xml, ic_luba_foreground.xml, ic_luba_monochrome.xml (remplaces par des PNG).
+Puis : Build > Clean Project, Build > Rebuild Project.
