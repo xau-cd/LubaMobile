@@ -12,11 +12,11 @@ permissions:
 
 jobs:
   build:
-    name: Build Luba Mobile
+    name: Construire Luba Mobile
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Télécharger le dépôt
+      # 1. Récupérer le projet
       - name: Checkout Repository
         uses: actions/checkout@v4
 
@@ -27,41 +27,56 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      # 3. Installer le SDK Android
+      # 3. Configurer Android SDK
       - name: Setup Android SDK
-        uses: android-actions/setup-android@v4.0.2
-        with:
-          packages: |
-            platform-tools
-            platforms;android-36
-            build-tools;35.0.0
+        uses: android-actions/setup-android@v4
 
-      # 4. Installer Gradle 8.13
+      # 4. Installer les composants Android
+      - name: Install Android Packages
+        run: |
+          sdkmanager --install \
+            "platform-tools" \
+            "platforms;android-36" \
+            "build-tools;36.0.0"
+
+      # 5. Vérifier les fichiers
+      - name: Verify Project Structure
+        run: |
+          test -f settings.gradle.kts
+          test -f build.gradle.kts
+          test -f gradle.properties
+          test -f application/build.gradle.kts
+          test -f application/src/main/AndroidManifest.xml
+
+          echo "Luba Mobile project structure OK"
+
+      # 6. Installer Gradle
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.13'
 
-      # 5. Vérifier la structure
-      - name: Verify Project
-        run: |
-          test -f settings.gradle.kts
-          test -f build.gradle.kts
-          test -f application/build.gradle.kts
-          test -f application/src/main/AndroidManifest.xml
-          echo "Project structure verified"
-
-      # 6. Compiler l'application
+      # 7. Compiler APK
       - name: Build Debug APK
-        run: gradle :application:assembleDebug --stacktrace
+        run: |
+          gradle --no-daemon \
+            :application:assembleDebug \
+            --stacktrace
 
-      # 7. Vérifier l'APK
+      # 8. Vérifier APK
       - name: Verify APK
         run: |
-          find application/build/outputs/apk/debug \
-            -name "*.apk" -type f
+          APK="application/build/outputs/apk/debug/application-debug.apk"
 
-      # 8. Publier l'APK
+          if [ ! -f "$APK" ]; then
+            echo "APK introuvable"
+            find application/build/outputs -type f || true
+            exit 1
+          fi
+
+          echo "APK généré avec succès"
+
+      # 9. Télécharger APK
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
