@@ -37,9 +37,11 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      # 4. Vérifier le SDK Android préinstallé
+      # 4. Vérifier le SDK Android
       - name: Verify Android SDK
+        shell: bash
         run: |
+          set -e
           echo "ANDROID_HOME=$ANDROID_HOME"
 
           if [ ! -d "$ANDROID_HOME" ]; then
@@ -78,6 +80,7 @@ jobs:
 
       # 6. Vérifier les fichiers du projet
       - name: Verify Project Structure
+        shell: bash
         run: |
           set -e
 
@@ -91,24 +94,28 @@ jobs:
           echo "Structure Android valide."
 
       # 7. Vérifier Gradle Wrapper
-      
-- name: Vérifier le wrapper Gradle
-  run: |
-    set -eux
-    test -f gradlew
-    test -f gradle/wrapper/gradle-wrapper.jar
-    test -f gradle/wrapper/gradle-wrapper.properties
-    chmod +x gradlew
-    ./gradlew --version
+      - name: Verify Gradle Wrapper
+        shell: bash
+        run: |
+          set -eux
 
+          test -f gradlew
+          test -f gradle/wrapper/gradle-wrapper.jar
+          test -f gradle/wrapper/gradle-wrapper.properties
+
+          chmod +x gradlew
+
+          ./gradlew --version
 
       # 8. Vérifier la configuration Android
       - name: Verify Android Project
+        shell: bash
         run: |
-          ./gradlew :app:tasks --all
+          ./gradlew :app:tasks --all --stacktrace
 
       # 9. Compiler l'application
       - name: Build Debug APK
+        shell: bash
         run: |
           ./gradlew :app:assembleDebug \
             --no-daemon \
@@ -116,6 +123,7 @@ jobs:
 
       # 10. Vérifier le résultat
       - name: Verify APK
+        shell: bash
         run: |
           APK="app/build/outputs/apk/debug/app-debug.apk"
 
